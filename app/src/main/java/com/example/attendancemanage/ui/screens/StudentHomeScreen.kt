@@ -1,5 +1,6 @@
 package com.example.attendancemanage.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +21,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -27,11 +31,32 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.attendancemanage.model.Subject
 import com.example.attendancemanage.ui.theme.AttendanceManageTheme
+import com.example.attendancemanage.viewmodel.AuthViewModel
+import com.example.attendancemanage.viewmodel.StudentViewModel
 import com.example.attendancemanage.viewmodel.SubjectViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StudentHomeScreen(navController: NavHostController, subjectViewModel: SubjectViewModel = viewModel()) {
+fun StudentHomeScreen(
+    navController: NavHostController,
+    authViewModel: AuthViewModel = viewModel(),
+    studentViewModel: StudentViewModel,
+    rollNo:String
+) {
+//    val rollNo = authViewModel.signinResult.value?.data?.userId
+    studentViewModel.getStudentData(rollNo)
+    val rollNo = studentViewModel.student.value?.rollNo
+    val subjects by studentViewModel.studentSubjects.observeAsState(emptyList())
+    if (rollNo != null) {
+        Log.v("StudentHomeScreen",rollNo)
+    }
+
+    LaunchedEffect(rollNo) {
+        rollNo?.let {
+            studentViewModel.getSubjectsForStudent(it)
+        }
+    }
+
     AttendanceManageTheme {
         Scaffold(
             topBar = {
@@ -58,9 +83,9 @@ fun StudentHomeScreen(navController: NavHostController, subjectViewModel: Subjec
             ) {
                 Text("Your Subjects", style = MaterialTheme.typography.headlineSmall)
                 LazyColumn {
-                    items(subjectViewModel.selectedSubjects) { subject ->
+                    items(subjects) { subject ->
                         SubjectRo(subject, onClick = {
-                            navController.navigate("subject/${subject.subjectTitle}")
+                            navController.navigate("subject/${subject.subjectTitle}/${rollNo}")
                         })
                     }
                 }

@@ -1,5 +1,7 @@
 package com.example.attendancemanage.model
 
+import androidx.compose.ui.semantics.Role
+
 
 data class SignInResult(
     val data: UserData?,
@@ -7,7 +9,8 @@ data class SignInResult(
 )
 
 data class UserData(
-    var userId:String,
-    var username:String?,
-    var userEmail:String?
+    val userId:String,
+    val username:String?,
+    val userEmail:String?,
+    val role: String = "" //e.g. Student or Admin
 )

@@ -1,5 +1,6 @@
 package com.example.attendancemanage.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,15 +21,23 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.attendancemanage.model.Attendance
+import com.example.attendancemanage.viewmodel.AttendanceViewModel
 import com.example.attendancemanage.viewmodel.SubjectViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectManageScreen(
-    navController: NavHostController, subjectViewModel: SubjectViewModel, name: String
+    navController: NavHostController, attendanceViewModel: AttendanceViewModel, name: String,rollNo: String
 ) {
+    val context = LocalContext.current
+    val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
     Scaffold(topBar = {
         TopAppBar(
             title = { Text(text = name, color = MaterialTheme.colorScheme.onBackground) },
@@ -50,7 +59,11 @@ fun SubjectManageScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Button(
-                onClick = { /* Handle Mark Attendance */ }, modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    val attendance = Attendance(rollNo, name, currentDate, "Present")
+                    attendanceViewModel.markAttendance(attendance)
+                    Toast.makeText(context, "Attendance marked as Present", Toast.LENGTH_SHORT).show()
+                }, modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Mark Attendance")
             }

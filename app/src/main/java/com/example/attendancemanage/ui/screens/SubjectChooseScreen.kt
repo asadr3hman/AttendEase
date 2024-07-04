@@ -32,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,13 +51,15 @@ import androidx.navigation.NavHostController
 import com.example.attendancemanage.R
 import com.example.attendancemanage.model.Subject
 import com.example.attendancemanage.ui.theme.AttendanceManageTheme
+import com.example.attendancemanage.viewmodel.StudentViewModel
 import com.example.attendancemanage.viewmodel.SubjectViewModel
 
 
 @Composable
 fun SubjectChooseScreen(
     navController: NavHostController,
-    subjectViewModel: SubjectViewModel = viewModel()
+    subjectViewModel: SubjectViewModel = viewModel(),
+    onNextClick: ()->Unit
 ) {
     var showAddSubjectDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
@@ -117,11 +120,7 @@ fun SubjectChooseScreen(
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                 onClick = {
-                    navController.navigate("student_home") {
-                        popUpTo("subject_choose") {
-                            inclusive = true
-                        }
-                    }
+                    onNextClick()
                 }
             ) {
                 Text(

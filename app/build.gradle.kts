@@ -70,6 +70,14 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    implementation("androidx.compose.runtime:runtime-livedata:1.6.8")
+
+    implementation ("androidx.compose.material:material-icons-extended-android:1.6.8")
+
+
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3")
+    implementation ("androidx.lifecycle:lifecycle-runtime-compose:2.8.3")
+
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
 

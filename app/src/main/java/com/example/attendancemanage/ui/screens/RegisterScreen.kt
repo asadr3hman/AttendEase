@@ -50,7 +50,7 @@ import com.example.attendancemanage.ui.theme.AttendanceManageTheme
 
 @Composable
 fun SignUpScreen(
-    onSignUpClicked: (String, String, String, String, (Boolean) -> Unit) -> Unit,
+    onSignUpClicked: (String, String, String, String,String, (Boolean) -> Unit) -> Unit,
     signInNavigation: () -> Unit,
     loading: Boolean,
     setLoading: (Boolean) -> Unit,
@@ -154,7 +154,7 @@ fun SignUpScreen(
                             validateSignUp(userName, userEmail, userPassword, confirmUserPassword)
                         if (validateSignUp == null) {
                             onSignUpClicked.invoke(
-                                userName, userEmail, userPassword, confirmUserPassword, setLoading
+                                userName, userEmail, userPassword, confirmUserPassword,userRollno, setLoading
                             )
                         } else {
                             showToast(
