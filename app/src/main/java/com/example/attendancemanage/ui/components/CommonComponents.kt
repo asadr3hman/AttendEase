@@ -15,13 +15,20 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Report
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
@@ -30,16 +37,22 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -52,15 +65,21 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.Visibility
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import com.example.attendancemanage.R
 import com.example.attendancemanage.ui.auth.validateSignIn
 import com.example.attendancemanage.ui.auth.validateSignUp
+import com.example.attendancemanage.ui.navigation.BottomNavigationBar
+import com.example.attendancemanage.ui.navigation.NavigationItem
 import com.example.attendancemanage.ui.theme.AttendanceManageTheme
 
 
@@ -152,4 +171,55 @@ fun showToast(context: Context, message: String) {
 @Composable
 fun Devider(){
 
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun SearchBar() {
+    var searchQuery by remember { mutableStateOf("") }
+
+    TopAppBar(
+        title = {
+            BasicTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Search
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        // Handle search action
+                    }
+                ),
+                singleLine = true
+            )
+        },
+        actions = {
+            IconButton(onClick = {
+                // Handle search button click
+            }) {
+                Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+            }
+        }
+    )
+}
+@Composable
+fun ItemList() {
+    LazyColumn {
+        items(10) { index ->
+            ListItem(
+                headlineContent = { Text("Two line list item with trailing") },
+                supportingContent = { Text("Secondary text") },
+                trailingContent = { Text("meta") },
+                leadingContent = {
+                    Icon(
+                        Icons.Filled.Favorite,
+                        contentDescription = "Localized description",
+                    )
+                }
+            )
+            Devider()
+        }
+    }
 }

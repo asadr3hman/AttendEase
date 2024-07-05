@@ -18,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.attendancemanage.model.Student
 import com.example.attendancemanage.ui.auth.validateSignUp
 import com.example.attendancemanage.ui.components.showToast
+import com.example.attendancemanage.ui.screens.AdminHomeScreen
 import com.example.attendancemanage.ui.screens.LoginScreen
 import com.example.attendancemanage.ui.screens.SignUpScreen
 import com.example.attendancemanage.ui.screens.StudentHomeScreen
@@ -36,35 +37,35 @@ fun AppNavigation() {
     val attendanceViewModel: AttendanceViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
     val studentViewModel : StudentViewModel = viewModel()
-    LaunchedEffect(key1 = Unit) {
-        val user = authViewModel.getSignedInUser()
-        if (user != null) {
-            // Fetch user role
-            val role = authViewModel.getUserRole(user.userId)
-            Log.v("Signup", role!!)
-            when (role) {
-                "Student" -> {
-                    navController.navigate("student_home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-                "Admin" -> {
-                    navController.navigate("admin_home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-                else -> {
-                    navController.navigate("login") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-            }
-        } else {
-            navController.navigate("login") { popUpTo("login") { inclusive = true } }
-        }
-    }
+//    LaunchedEffect(key1 = Unit) {
+//        val user = authViewModel.getSignedInUser()
+//        if (user != null) {
+//            // Fetch user role
+//            val role = authViewModel.getUserRole(user.userId)
+//            Log.v("Signup", role!!)
+//            when (role) {
+//                "Student" -> {
+//                    navController.navigate("student_home") {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                }
+//                "Admin" -> {
+//                    navController.navigate("admin_home") {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                }
+//                else -> {
+//                    navController.navigate("login") {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                }
+//            }
+//        } else {
+//            navController.navigate("login") { popUpTo("login") { inclusive = true } }
+//        }
+//    }
 
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = "admin_home") {
         composable("login") { Login(navController, authViewModel) }
         composable("register") { Register(navController, authViewModel) }
         composable("subject_choose/{username}/{email}/{rollNo}") {
@@ -97,6 +98,7 @@ fun AppNavigation() {
 
 @Composable
 fun AdminHome(navController: NavHostController) {
+    AdminHomeScreen(navController,)
     val context = LocalContext.current
     showToast(context,"AdminHome")
 }
