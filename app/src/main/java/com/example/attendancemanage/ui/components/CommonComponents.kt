@@ -64,7 +64,9 @@ fun ScreenTextFeild(
         } else VisualTransformation.None,
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(cornerRadius)),
+            .padding(horizontal = 32.dp, vertical = 8.dp)
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(cornerRadius)
+            ),
         value = text,
         colors = OutlinedTextFieldDefaults.colors(
             cursorColor = MaterialTheme.colorScheme.primary,

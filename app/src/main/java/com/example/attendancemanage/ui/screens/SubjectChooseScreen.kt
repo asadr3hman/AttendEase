@@ -32,7 +32,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,7 +50,6 @@ import androidx.navigation.NavHostController
 import com.example.attendancemanage.R
 import com.example.attendancemanage.model.Subject
 import com.example.attendancemanage.ui.theme.AttendanceManageTheme
-import com.example.attendancemanage.viewmodel.StudentViewModel
 import com.example.attendancemanage.viewmodel.SubjectViewModel
 
 
@@ -152,9 +150,9 @@ fun SubjectChooseScreen(
 @Composable
 fun AvailableSubjectsScreen(onSubjectSelected: (Subject) -> Unit, onDismiss: () -> Unit) {
     val availableSubjects = listOf(
-        Subject("Math", "Dr. John", 4),
-        Subject("Physics", "Dr. Smith", 3),
-        Subject("Chemistry", "Dr. Doe", 4)
+        Subject("Math", "Dr. John" ),
+        Subject("Physics", "Dr. Smith"),
+        Subject("Chemistry", "Dr. Doe")
     )
 
     Dialog(onDismissRequest = onDismiss) {

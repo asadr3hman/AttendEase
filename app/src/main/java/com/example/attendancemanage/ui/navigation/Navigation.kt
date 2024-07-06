@@ -36,48 +36,54 @@ fun AppNavigation() {
     val subjectViewModel: SubjectViewModel = viewModel()
     val attendanceViewModel: AttendanceViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
-    val studentViewModel : StudentViewModel = viewModel()
-//    LaunchedEffect(key1 = Unit) {
-//        val user = authViewModel.getSignedInUser()
-//        if (user != null) {
-//            // Fetch user role
-//            val role = authViewModel.getUserRole(user.userId)
-//            Log.v("Signup", role!!)
-//            when (role) {
-//                "Student" -> {
-//                    navController.navigate("student_home") {
-//                        popUpTo("login") { inclusive = true }
-//                    }
-//                }
-//                "Admin" -> {
-//                    navController.navigate("admin_home") {
-//                        popUpTo("login") { inclusive = true }
-//                    }
-//                }
-//                else -> {
-//                    navController.navigate("login") {
-//                        popUpTo("login") { inclusive = true }
-//                    }
-//                }
-//            }
-//        } else {
-//            navController.navigate("login") { popUpTo("login") { inclusive = true } }
-//        }
-//    }
+    val studentViewModel: StudentViewModel = viewModel()
+    LaunchedEffect(key1 = Unit) {
+        val user = authViewModel.getSignedInUser()
+        if (user != null) {
+            // Fetch user role
+            Log.v("NAV","")
+            val role = authViewModel.getUserRole(user.userId)
+            Log.v("Signup", role!!)
+            when (role) {
+                "Student" -> {
+                    navController.navigate("student_home/${user.userId}") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
 
-    NavHost(navController, startDestination = "admin_home") {
+                "Admin" -> {
+                    navController.navigate("admin_home") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+
+                else -> {
+                    navController.navigate("login") {
+                        popUpTo("login") { inclusive = true }
+                    }
+                }
+            }
+        } else {
+            navController.navigate("login") { popUpTo("login") { inclusive = true } }
+        }
+    }
+
+    NavHost(navController, startDestination = "login") {
         composable("login") { Login(navController, authViewModel) }
         composable("register") { Register(navController, authViewModel) }
-        composable("subject_choose/{username}/{email}/{rollNo}") {
+        composable("subject_choose/{username}/{email}/{rollNo}/{uid}") {
             val name = it.arguments?.getString("username")
             val rollNo = it.arguments?.getString("rollNo")
             val email = it.arguments?.getString("email")
-            val student = Student(email!!,rollNo!!,name!!)
-            Log.v("NavHost",student.toString())
-            Subject_choose(navController, subjectViewModel,studentViewModel, student) }
-        composable("student_home/{rollno}") {
-            val rollNo = it.arguments?.getString("rollno")
-            StudentHome(navController, subjectViewModel,studentViewModel, rollNo) }
+            val uid = it.arguments?.getString("uid")
+            val student = Student(email!!, rollNo!!, name!!, uid = uid)
+            Log.v("NavHost", student.toString())
+            Subject_choose(navController, subjectViewModel, studentViewModel, student)
+        }
+        composable("student_home/{uid}") {
+            val studentuid = it.arguments?.getString("uid")
+            StudentHome(navController, subjectViewModel, studentViewModel, studentuid!!)
+        }
         composable("subject/{name}/{studentId}") {
             val name = it.arguments?.getString("name")
             val rollNo = it.arguments?.getString("studentId")
@@ -98,9 +104,9 @@ fun AppNavigation() {
 
 @Composable
 fun AdminHome(navController: NavHostController) {
-    AdminHomeScreen(navController,)
+    AdminHomeScreen(navController)
     val context = LocalContext.current
-    showToast(context,"AdminHome")
+    showToast(context, "AdminHome")
 }
 
 @Composable
@@ -123,9 +129,9 @@ fun StudentHome(
     navController: NavHostController,
     subjectViewModel: SubjectViewModel,
     studentViewModel: StudentViewModel,
-    rollNo: String?
+    studentUID: String,
 ) {
-    rollNo?.let { StudentHomeScreen(navController, studentViewModel = studentViewModel, rollNo = it) }
+    StudentHomeScreen(navController, studentViewModel = studentViewModel, studentUID)
 }
 
 @Composable
@@ -133,13 +139,14 @@ fun Subject_choose(
     navController: NavHostController,
     subjectViewModel: SubjectViewModel,
     studentViewModel: StudentViewModel,
-    student: Student) {
+    student: Student
+) {
     SubjectChooseScreen(navController, subjectViewModel, onNextClick = {
         val subjects = subjectViewModel.selectedSubjects
         student.subjects = subjects
         Log.v("SubjectChoose", student.toString())
         studentViewModel.addStudentWithSubjects(student)
-        navController.navigate("student_home/${student.rollNo}") {
+        navController.navigate("student_home/{${student.uid}}") {
             popUpTo("login") { inclusive = true }
         }
     })
@@ -151,16 +158,16 @@ fun Register(navController: NavController, authViewModel: AuthViewModel) {
     var loading by rememberSaveable { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    SignUpScreen(onSignUpClicked = { username, email, password, confirmPassword,rollNo, setLoading ->
+    SignUpScreen(onSignUpClicked = { username, email, password, confirmPassword, rollNo, setLoading ->
         val validationError = validateSignUp(username, email, password, confirmPassword)
         if (validationError != null) {
             showToast(context, validationError)
         } else {
             coroutineScope.launch {
-                authViewModel.signUpUser(username, email, password) { success, exception ->
+                authViewModel.signUpUser(username, email, password) { success, uid, exception ->
                     if (success) {
                         showToast(context, "Successful")
-                        navController.navigate("subject_choose/$username/$email/$rollNo") {
+                        navController.navigate("subject_choose/$username/$email/$rollNo/$uid") {
                             popUpTo("register") {
                                 inclusive = true
                             }
@@ -187,7 +194,7 @@ fun Login(navController: NavController, authViewModel: AuthViewModel) {
     val coroutineScope = rememberCoroutineScope()
 
     LoginScreen(onForgetPassClicked = {
-        navController.navigate("forgetPassword") { popUpTo("login") { inclusive = true } }
+        showToast(context, "Forget Password")
     }, onLoginClicked = { username, password, setLoading ->
         coroutineScope.launch {
             setLoading(true)
@@ -203,15 +210,17 @@ fun Login(navController: NavController, authViewModel: AuthViewModel) {
                         Log.v("Signup", role!!)
                         when (role) {
                             "Student" -> {
-                                navController.navigate("student_home") {
+                                navController.navigate("student_home/${user.data.userId}") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
+
                             "Admin" -> {
                                 navController.navigate("admin_home") {
                                     popUpTo("login") { inclusive = true }
                                 }
                             }
+
                             else -> {
                                 navController.navigate("login") {
                                     popUpTo("login") { inclusive = true }

@@ -4,5 +4,5 @@ data class Attendance(
     val studentId: String = "",
     val subjectTitle: String = "",
     val date: String = "",
-    val status: String = "" // e.g., "Present", "Absent", "Leave"
+    val status: String = "Absent" // e.g., "Present", "Absent", "Leave"
 )

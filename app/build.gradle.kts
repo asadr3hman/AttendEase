@@ -95,4 +95,7 @@ dependencies {
 
     implementation ("com.google.accompanist:accompanist-navigation-animation:0.24.13-rc")
 
+    implementation ("com.github.ozcanalasalvar.picker:datepicker:2.0.7")
+
+    implementation ("com.google.code.gson:gson:2.8.8")
 }

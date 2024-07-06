@@ -23,39 +23,37 @@ class StudentViewModel() : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
 
 
-    fun getStudentData(studentRollNo: String) {
-        viewModelScope.launch {
-            try {
-                val studentRef = db.collection("students").document(studentRollNo)
-                val documentSnapshot = studentRef.get().await()
-                val student = documentSnapshot.toObject<Student>()
-                student?.let {
-                    _student.postValue(it)
-                    _studentSubjects.postValue(it.subjects!!)
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error fetching student data", e)
-            }
+    suspend fun getStudentData(uid: String): Student? {
+        return try {
+            val studentRef = db.collection("students").document(uid)
+            val documentSnapshot = studentRef.get().await()
+            Log.e(TAG, documentSnapshot.toObject<Student>().toString())
+            documentSnapshot.toObject<Student>()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching student data", e)
+            null
         }
     }
 
     fun addStudentWithSubjects(student: Student) {
         viewModelScope.launch {
-            db.collection("students").document(student.rollNo).set(student)
-                .addOnSuccessListener {
-                    _student.postValue(student)
-                    Log.v("StudentViewModel", "Student has been stored in the database")
-                }
-                .addOnFailureListener {
-                    Log.v("StudentViewModel", "Student has not been stored in the database. Something went wrong")
-                }
+            student.uid?.let {
+                db.collection("students").document(it).set(student)
+                    .addOnSuccessListener {
+                        _student.postValue(student)
+                        Log.v("StudentViewModel", "Student has been stored in the database")
+                    }
+                    .addOnFailureListener {
+                        Log.v("StudentViewModel", "Student has not been stored in the database. Something went wrong")
+                    }
+            }
         }
     }
 
-    fun getSubjectsForStudent(studentId: String) {
+    fun getSubjectsForStudent(uid: String) {
         viewModelScope.launch {
-            Log.v(TAG, studentId)
-            val subjects = getSubjectsForStudentFromFirestore(studentId)
+            Log.v(TAG, uid)
+            val subjects = getSubjectsForStudentFromFirestore(uid)
             if (subjects != null) {
                 _studentSubjects.postValue(subjects!!)
             }
@@ -63,8 +61,8 @@ class StudentViewModel() : ViewModel() {
         }
     }
 
-    private suspend fun getSubjectsForStudentFromFirestore(studentId: String): List<Subject>? {
-        val studentRef = db.collection("students").document(studentId)
+    private suspend fun getSubjectsForStudentFromFirestore(uid: String): List<Subject>? {
+        val studentRef = db.collection("students").document(uid)
         val documentSnapshot = studentRef.get().await()
         val student = documentSnapshot.toObject<Student>()
         return student?.subjects

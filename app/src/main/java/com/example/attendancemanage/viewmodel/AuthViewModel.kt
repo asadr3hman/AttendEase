@@ -42,20 +42,20 @@ class AuthViewModel : ViewModel() {
         username: String,
         email: String,
         password: String,
-        callback: (Boolean, Exception?) -> Unit
+        callback: (Boolean,String?, Exception?) -> Unit
     ) {
         try {
             val authResult = auth.createUserWithEmailAndPassword(email, password).await()
             authResult.user?.let { user ->
                 val userData = UserData(user.uid, username, email, "Student")
                 saveUserToFireStore(user.uid, userData)
-                callback(true, null)
+                callback(true,user.uid, null)
             } ?: run {
-                callback(false, Exception("Failed to get user ID after sign up"))
+                callback(false, null, Exception("Failed to get user ID after sign up"))
             }
         } catch (e: Exception) {
             Log.e("SignUp", "Failed to sign up user", e)
-            callback(false, e)
+            callback(false, null ,e)
         }
     }
 

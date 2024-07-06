@@ -98,9 +98,7 @@ fun LoginScreen(
                     modifier = Modifier.size(100.dp)
                 )
                 ScreenTextFeild(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(cornerRadius)),
+                    modifier = Modifier,
                     text = userEmail,
                     hint = "Enter Email",
                     leadingIcon = Icons.Outlined.Email,
@@ -109,9 +107,7 @@ fun LoginScreen(
                     userEmail = it
                 }
                 ScreenTextFeild(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(cornerRadius)),
+                    modifier = Modifier,
                     text = userPassword,
                     hint = "Enter Password",
                     leadingIcon = Icons.Outlined.Lock,

@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -26,7 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.attendancemanage.model.Attendance
 import com.example.attendancemanage.viewmodel.AttendanceViewModel
-import com.example.attendancemanage.viewmodel.SubjectViewModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -34,13 +35,17 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectManageScreen(
-    navController: NavHostController, attendanceViewModel: AttendanceViewModel, name: String,rollNo: String
+    navController: NavHostController,
+    attendanceViewModel: AttendanceViewModel,
+    subjectName: String,
+    rollNo: String
 ) {
     val context = LocalContext.current
     val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+
     Scaffold(topBar = {
         TopAppBar(
-            title = { Text(text = name, color = MaterialTheme.colorScheme.onBackground) },
+            title = { Text(text = subjectName, color = MaterialTheme.colorScheme.onBackground) },
             navigationIcon = {
                 IconButton(onClick = { navController.popBackStack() }) {
                     Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
@@ -50,6 +55,7 @@ fun SubjectManageScreen(
         )
     }) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
+        val viewModelScope = rememberCoroutineScope()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -60,20 +66,38 @@ fun SubjectManageScreen(
         ) {
             Button(
                 onClick = {
-                    val attendance = Attendance(rollNo, name, currentDate, "Present")
-                    attendanceViewModel.markAttendance(attendance)
+                    val attendance = Attendance( rollNo, subjectName, currentDate, "Present")
+                    viewModelScope.launch {
+                        attendanceViewModel.markAttendance(attendance)
+                    }
                     Toast.makeText(context, "Attendance marked as Present", Toast.LENGTH_SHORT).show()
-                }, modifier = Modifier.fillMaxWidth()
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Mark Attendance")
             }
             Button(
-                onClick = { /* Handle Mark Leave */ }, modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    val attendance = Attendance( rollNo, subjectName, currentDate, "Absent")
+                    viewModelScope.launch {
+                        attendanceViewModel.markAttendance(attendance)
+                    }
+                    Toast.makeText(context, "Attendance marked as Absent", Toast.LENGTH_SHORT).show()
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Mark Leave")
+                Text("Mark Absent")
             }
             Button(
-                onClick = { /* Handle View Attendance */ }, modifier = Modifier.fillMaxWidth()
+                onClick = {
+                    // Handle View Attendance
+                    // Example of fetching attendance records:
+                    viewModelScope.launch {
+                        val attendanceList = attendanceViewModel.getAttendanceForSubject("a")
+                        // Process the attendance list as needed
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Text("View Attendance")
             }

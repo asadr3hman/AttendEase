@@ -22,38 +22,36 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.attendancemanage.model.Subject
 import com.example.attendancemanage.ui.theme.AttendanceManageTheme
-import com.example.attendancemanage.viewmodel.AuthViewModel
 import com.example.attendancemanage.viewmodel.StudentViewModel
-import com.example.attendancemanage.viewmodel.SubjectViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentHomeScreen(
     navController: NavHostController,
-    authViewModel: AuthViewModel = viewModel(),
     studentViewModel: StudentViewModel,
-    rollNo:String
+    studentuid: String
 ) {
-//    val rollNo = authViewModel.signinResult.value?.data?.userId
-    studentViewModel.getStudentData(rollNo)
-    val rollNo = studentViewModel.student.value?.rollNo
-    val subjects by studentViewModel.studentSubjects.observeAsState(emptyList())
-    if (rollNo != null) {
-        Log.v("StudentHomeScreen",rollNo)
+    val subjects = remember { mutableStateListOf<Subject>() }
+    if (studentuid != null) {
+        Log.v("StudentHomeSCREEN", studentuid)
     }
 
-    LaunchedEffect(rollNo) {
-        rollNo?.let {
-            studentViewModel.getSubjectsForStudent(it)
+    // Fetch the student data using LaunchedEffect
+    LaunchedEffect(studentuid) {
+        Log.v("StudentHomeSCREEN", "HEHEHE")
+        val student = studentViewModel.getStudentData(studentuid)
+        student?.let { Log.v("StudentHomeSCREEN", it.name.toString()) }
+        student?.subjects?.let {
+            subjects.clear()
+            subjects.addAll(it)
         }
     }
 
@@ -85,7 +83,7 @@ fun StudentHomeScreen(
                 LazyColumn {
                     items(subjects) { subject ->
                         SubjectRo(subject, onClick = {
-                            navController.navigate("subject/${subject.subjectTitle}/${rollNo}")
+                            navController.navigate("subject/${subject.subjectTitle}/${studentuid}")
                         })
                     }
                 }
