@@ -105,39 +105,43 @@ fun SignUpScreen(
                 )
 
                 ScreenTextFeild(
+                    modifier = Modifier,
                     text = userName,
                     hint = "Full Name",
                     leadingIcon = Icons.Outlined.AccountCircle,
-                    false
+                    password = false
                 ) {
                     userName = it
                 }
                 ScreenTextFeild(
-                    text = userRollno, hint = "Roll no", leadingIcon = Icons.Outlined.Person, false
+                    modifier = Modifier, text = userRollno, hint = "Roll no", leadingIcon = Icons.Outlined.Person, password = false
                 ) {
                     userRollno = it
                 }
                 ScreenTextFeild(
+                    modifier = Modifier,
                     text = userEmail,
                     hint = "Enter Email",
                     leadingIcon = Icons.Outlined.Email,
-                    false
+                    password = false
                 ) {
                     userEmail = it
                 }
                 ScreenTextFeild(
+                    modifier = Modifier,
                     text = userPassword,
                     hint = "Enter Password",
                     leadingIcon = Icons.Outlined.Lock,
-                    true
+                    password = true
                 ) {
                     userPassword = it
                 }
                 ScreenTextFeild(
+                    modifier = Modifier,
                     text = confirmUserPassword,
                     hint = "Re-Enter Password",
                     leadingIcon = Icons.Outlined.Lock,
-                    true
+                    password = true
                 ) {
                     confirmUserPassword = it
                 }

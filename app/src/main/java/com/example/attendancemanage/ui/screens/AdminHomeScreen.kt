@@ -1,5 +1,6 @@
 package com.example.attendancemanage.ui.screens
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -7,13 +8,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -104,21 +109,29 @@ fun SetUpNavGraph(
     innerPadding: PaddingValues,
     onSignOut: () -> Unit
 ) {
+    var currentScreen by remember { mutableStateOf("search") }
+
     NavHost(
         navController = navController,
         startDestination = Screens.Search.route,
         modifier = Modifier.padding(innerPadding)
     ) {
         composable(Screens.Leave_Approval.route) {
-
+            currentScreen = "leave_approval"
         }
         composable(Screens.Search.route) {
-            Column {
-                SearchBar()
-                ItemList()
-            }
+            currentScreen = "search"
         }
         composable(Screens.Report.route) {
+            currentScreen = "report"
+        }
+    }
+
+    Crossfade(targetState = currentScreen) { screen ->
+        when (screen) {
+            "leave_approval" -> LeaveApprovalScreen()
+            "search" -> SearchScreen()
+            "report" -> ReportScreen()
         }
     }
 }
