@@ -21,13 +21,16 @@ import com.example.attendancemanage.ui.components.showToast
 import com.example.attendancemanage.ui.screens.AdminHomeScreen
 import com.example.attendancemanage.ui.screens.LoginScreen
 import com.example.attendancemanage.ui.screens.SignUpScreen
+import com.example.attendancemanage.ui.screens.SplashScreen
 import com.example.attendancemanage.ui.screens.StudentHomeScreen
 import com.example.attendancemanage.ui.screens.SubjectChooseScreen
 import com.example.attendancemanage.ui.screens.SubjectManageScreen
+import com.example.attendancemanage.ui.screens.ViewAttendanceScreen
 import com.example.attendancemanage.viewmodel.AttendanceViewModel
 import com.example.attendancemanage.viewmodel.AuthViewModel
 import com.example.attendancemanage.viewmodel.StudentViewModel
 import com.example.attendancemanage.viewmodel.SubjectViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
@@ -37,38 +40,39 @@ fun AppNavigation() {
     val attendanceViewModel: AttendanceViewModel = viewModel()
     val authViewModel: AuthViewModel = viewModel()
     val studentViewModel: StudentViewModel = viewModel()
-    LaunchedEffect(key1 = Unit) {
-        val user = authViewModel.getSignedInUser()
-        if (user != null) {
-            // Fetch user role
-            Log.v("NAV","")
-            val role = authViewModel.getUserRole(user.userId)
-            Log.v("Signup", role!!)
-            when (role) {
-                "Student" -> {
-                    navController.navigate("student_home/${user.userId}") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
+//    LaunchedEffect(key1 = Unit) {
+//        val user = authViewModel.getSignedInUser()
+//        if (user != null) {
+//            // Fetch user role
+//            Log.v("NAV","")
+//            val role = authViewModel.getUserRole(user.userId)
+//            Log.v("Signup", role!!)
+//            when (role) {
+//                "Student" -> {
+//                    navController.navigate("student_home/${user.userId}") {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                }
+//
+//                "Admin" -> {
+//                    navController.navigate("admin_home") {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                }
+//
+//                else -> {
+//                    navController.navigate("login") {
+//                        popUpTo("login") { inclusive = true }
+//                    }
+//                }
+//            }
+//        } else {
+//            navController.navigate("login") { popUpTo("login") { inclusive = true } }
+//        }
+//    }
 
-                "Admin" -> {
-                    navController.navigate("admin_home") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-
-                else -> {
-                    navController.navigate("login") {
-                        popUpTo("login") { inclusive = true }
-                    }
-                }
-            }
-        } else {
-            navController.navigate("login") { popUpTo("login") { inclusive = true } }
-        }
-    }
-
-    NavHost(navController, startDestination = "login") {
+    NavHost(navController, startDestination = "splash") {
+        composable("splash") { Splash(navController,authViewModel) }
         composable("login") { Login(navController, authViewModel) }
         composable("register") { Register(navController, authViewModel) }
         composable("subject_choose/{username}/{email}/{rollNo}/{uid}") {
@@ -90,7 +94,9 @@ fun AppNavigation() {
             SubjectManage(navController, attendanceViewModel, name!!, rollNo!!)
         }
 //        composable("mark_attendance") { MarkAttendanceScreen(navController) }
-//        composable("view_attendance") { ViewAttendanceScreen(navController) }
+        composable("view_attendance/{subjectName}") {
+            val name = it.arguments?.getString("subjectName")
+            ViewAttendance(navController,attendanceViewModel,studentViewModel,name!!) }
 //        composable("leave_request") { LeaveRequestScreen(navController) }
 //        composable("edit_profile") { EditProfileScreen(navController) }
 
@@ -100,6 +106,51 @@ fun AppNavigation() {
 //        composable("generate_reports") { GenerateReportsScreen(navController) }
 //        composable("grading_module") { GradingModuleScreen(navController) }
     }
+}
+
+@Composable
+fun Splash(navController: NavController, authViewModel: AuthViewModel) {
+    LaunchedEffect(key1 = Unit) {
+        val user = authViewModel.getSignedInUser()
+        if (user != null) {
+            // Fetch user role
+            Log.v("NAV","")
+            val role = authViewModel.getUserRole(user.userId)
+            Log.v("Signup", role!!)
+            when (role) {
+                "Student" -> {
+                    navController.navigate("student_home/${user.userId}") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+
+                "Admin" -> {
+                    navController.navigate("admin_home") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+
+                else -> {
+                    navController.navigate("login") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+            }
+        } else {
+            navController.navigate("login") { popUpTo("splash") { inclusive = true } }
+        }
+    }
+    SplashScreen()
+}
+
+@Composable
+fun ViewAttendance(
+    navController: NavHostController,
+    attendanceViewModel: AttendanceViewModel,
+    studentViewModel: StudentViewModel,
+    subjectName: String
+) {
+    ViewAttendanceScreen(navController,attendanceViewModel,studentViewModel,subjectName)
 }
 
 @Composable

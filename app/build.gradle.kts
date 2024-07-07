@@ -93,9 +93,9 @@ dependencies {
 
         implementation ("androidx.navigation:navigation-compose:2.7.7")
 
-    implementation ("com.google.accompanist:accompanist-navigation-animation:0.24.13-rc")
-
     implementation ("com.github.ozcanalasalvar.picker:datepicker:2.0.7")
+    implementation ("com.github.ozcanalasalvar.picker:wheelview:2.0.7")
+    //For view based UI's
+    implementation ("androidx.compose.material3:material3:Tag")
 
-    implementation ("com.google.code.gson:gson:2.8.8")
 }

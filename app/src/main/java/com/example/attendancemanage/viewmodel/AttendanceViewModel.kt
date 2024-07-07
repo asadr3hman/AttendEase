@@ -36,21 +36,50 @@ class AttendanceViewModel : ViewModel() {
     // Request leave
     suspend fun requestLeave(leaveRequest: LeaveRequest) {
         try {
-            db.collection("leaveRequests").document(leaveRequest.leaveRequestId).set(leaveRequest).await()
+            db.collection("leaveRequests").add(leaveRequest.copy()).await()
+            db.collection("attendance").add(leaveRequest.copy()).await()
         } catch (e: Exception) {
             Log.e("AttendanceViewModel", "Error requesting leave", e)
         }
     }
 
     // Fetch attendance for a subject
-    suspend fun getAttendanceForSubject(subjectId: String): List<Attendance> {
+    suspend fun getAttendanceForSubject(subjectTitle: String): List<Attendance> {
         return try {
-            val attendanceRef = db.collection("attendance").whereEqualTo("subjectId", subjectId)
+            val attendanceRef = db.collection("attendance").whereEqualTo("subjectTitle", subjectTitle)
             val querySnapshot = attendanceRef.get().await()
             querySnapshot.toObjects<Attendance>()
         } catch (e: Exception) {
             Log.e("AttendanceViewModel", "Error fetching attendance records", e)
             emptyList()
+        }
+    }
+
+    suspend fun getTodayAttendanceForSubject(subjectTitle: String, date: String): List<Attendance> {
+        return try {
+            val attendanceRef = db.collection("attendance")
+                .whereEqualTo("subjectTitle", subjectTitle)
+                .whereEqualTo("date", date)
+            val querySnapshot = attendanceRef.get().await()
+            querySnapshot.toObjects<Attendance>()
+        } catch (e: Exception) {
+            Log.e("AttendanceViewModel", "Error fetching attendance records", e)
+            emptyList()
+        }
+    }
+
+    // Check if attendance is already marked
+    suspend fun isAttendanceMarked(studentId: String, subjectTitle: String, date: String): Boolean {
+        return try {
+            val attendanceRef = db.collection("attendance")
+                .whereEqualTo("studentId", studentId)
+                .whereEqualTo("subjectTitle", subjectTitle)
+                .whereEqualTo("date", date)
+            val querySnapshot = attendanceRef.get().await()
+            !querySnapshot.isEmpty
+        } catch (e: Exception) {
+            Log.e("AttendanceViewModel", "Error checking attendance status", e)
+            false
         }
     }
 }

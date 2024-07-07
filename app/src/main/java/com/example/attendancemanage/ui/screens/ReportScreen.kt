@@ -1,6 +1,7 @@
 package com.example.attendancemanage.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,18 +52,13 @@ fun ReportScreen() {
     var showFromDatePicker by remember { mutableStateOf(false) }
     var showToDatePicker by remember { mutableStateOf(false) }
 
-    // Date format
-    val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-
-    var userFormdata by remember { mutableStateOf("") }
-    var userTodata by remember { mutableStateOf("") }
-
-
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(8.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
     ) {
         TextField(
             value = rollNo,
@@ -120,7 +116,6 @@ fun ReportScreen() {
         }) {
             Text("Select From Date")
         }
-        Text(text = userFormdata)
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -132,7 +127,6 @@ fun ReportScreen() {
         }) {
             Text("Select To Date")
         }
-        Text(text = userTodata)
 
         Spacer(modifier = Modifier.height(16.dp))
 

@@ -3,6 +3,7 @@ package com.example.attendancemanage.ui.screens
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,13 +21,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.attendancemanage.model.Attendance
+import com.example.attendancemanage.model.LeaveRequest
 import com.example.attendancemanage.viewmodel.AttendanceViewModel
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -42,6 +50,14 @@ fun SubjectManageScreen(
 ) {
     val context = LocalContext.current
     val currentDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    val viewModelScope = rememberCoroutineScope()
+    var isAttendanceMarked by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        isAttendanceMarked = attendanceViewModel.isAttendanceMarked(rollNo, subjectName, currentDate)
+        isLoading = false
+    }
 
     Scaffold(topBar = {
         TopAppBar(
@@ -55,51 +71,92 @@ fun SubjectManageScreen(
         )
     }) { innerPadding ->
         val modifier = Modifier.padding(innerPadding)
-        val viewModelScope = rememberCoroutineScope()
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(color = MaterialTheme.colorScheme.background)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Button(
-                onClick = {
-                    val attendance = Attendance( rollNo, subjectName, currentDate, "Present")
-                    viewModelScope.launch {
-                        attendanceViewModel.markAttendance(attendance)
-                    }
-                    Toast.makeText(context, "Attendance marked as Present", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth()
+
+        if (isLoading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background),
+                contentAlignment = Alignment.Center
             ) {
-                Text("Mark Attendance")
+                CircularProgressIndicator()
             }
-            Button(
-                onClick = {
-                    val attendance = Attendance( rollNo, subjectName, currentDate, "Absent")
-                    viewModelScope.launch {
-                        attendanceViewModel.markAttendance(attendance)
-                    }
-                    Toast.makeText(context, "Attendance marked as Absent", Toast.LENGTH_SHORT).show()
-                },
-                modifier = Modifier.fillMaxWidth()
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.background)
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
-                Text("Mark Absent")
-            }
-            Button(
-                onClick = {
-                    // Handle View Attendance
-                    // Example of fetching attendance records:
-                    viewModelScope.launch {
-                        val attendanceList = attendanceViewModel.getAttendanceForSubject("a")
-                        // Process the attendance list as needed
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("View Attendance")
+                Button(
+                    onClick = {
+                        val attendance = Attendance(
+                            studentId = rollNo,
+                            subjectTitle = subjectName,
+                            date = currentDate,
+                            status = "Present"
+                        )
+                        viewModelScope.launch {
+                            attendanceViewModel.markAttendance(attendance)
+                        }
+                        Toast.makeText(context, "Attendance marked as Present", Toast.LENGTH_SHORT)
+                            .show()
+                        isAttendanceMarked = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isAttendanceMarked
+                ) {
+                    Text("Mark Attendance")
+                }
+                Button(
+                    onClick = {
+                        val attendance = Attendance(
+                            studentId = rollNo,
+                            subjectTitle = subjectName,
+                            date = currentDate,
+                            status = "Absent"
+                        )
+                        viewModelScope.launch {
+                            attendanceViewModel.markAttendance(attendance)
+                        }
+                        Toast.makeText(context, "Attendance marked as Absent", Toast.LENGTH_SHORT)
+                            .show()
+                        isAttendanceMarked = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isAttendanceMarked
+                ) {
+                    Text("Mark Absent")
+                }
+                Button(
+                    onClick = {
+                        val attendance = LeaveRequest(
+                            studentId = rollNo,
+                            subjectTitle = subjectName,
+                            date = currentDate
+                        )
+                        viewModelScope.launch {
+                            attendanceViewModel.requestLeave(attendance)
+                        }
+                        Toast.makeText(context, "Leave Request sent", Toast.LENGTH_SHORT)
+                            .show()
+                        isAttendanceMarked = true
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isAttendanceMarked
+                ) {
+                    Text("Request Leave")
+                }
+                Button(
+                    onClick = {
+                        navController.navigate("view_attendance/${subjectName}")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("View Attendance")
+                }
             }
         }
     }

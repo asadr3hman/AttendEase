@@ -26,9 +26,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.attendancemanage.model.Subject
+import com.example.attendancemanage.ui.components.showToast
 import com.example.attendancemanage.ui.theme.AttendanceManageTheme
 import com.example.attendancemanage.viewmodel.StudentViewModel
 
@@ -39,6 +41,7 @@ fun StudentHomeScreen(
     studentViewModel: StudentViewModel,
     studentuid: String
 ) {
+    val context = LocalContext.current
     val subjects = remember { mutableStateListOf<Subject>() }
     if (studentuid != null) {
         Log.v("StudentHomeSCREEN", studentuid)
@@ -61,7 +64,7 @@ fun StudentHomeScreen(
                 TopAppBar(
                     title = { Text("Student Dashboard") },
                     actions = {
-                        IconButton(onClick = { /* Navigate to Profile Edit Screen */ }) {
+                        IconButton(onClick = { showToast(context,"Edit Profile") }) {
                             Icon(
                                 imageVector = Icons.Default.AccountCircle,
                                 contentDescription = "Edit Profile"
