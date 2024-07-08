@@ -20,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,6 +31,11 @@ import com.example.attendancemanage.ui.components.SearchBar
 import com.example.attendancemanage.ui.navigation.BottomNavigationBar
 import com.example.attendancemanage.ui.navigation.NavigationItem
 import com.example.attendancemanage.ui.navigation.Screens
+import com.example.attendancemanage.viewmodel.AttendanceViewModel
+import com.example.attendancemanage.viewmodel.AuthViewModel
+import com.example.attendancemanage.viewmodel.LeaveApprovalViewModel
+import com.example.attendancemanage.viewmodel.StudentViewModel
+import com.example.attendancemanage.viewmodel.SubjectViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,11 +116,17 @@ fun SetUpNavGraph(
     innerPadding: PaddingValues,
     onSignOut: () -> Unit
 ) {
-    var currentScreen by remember { mutableStateOf("search") }
+    val subjectViewModel: SubjectViewModel = viewModel()
+    val attendanceViewModel: AttendanceViewModel = viewModel()
+    val authViewModel: AuthViewModel = viewModel()
+    val studentViewModel: StudentViewModel = viewModel()
+    val leaveApprovalViewModel: LeaveApprovalViewModel = viewModel()
+
+    var currentScreen by remember { mutableStateOf("leave_approval") }
 
     NavHost(
         navController = navController,
-        startDestination = Screens.Search.route,
+        startDestination = Screens.Leave_Approval.route,
         modifier = Modifier.padding(innerPadding)
     ) {
         composable(Screens.Leave_Approval.route) {
@@ -130,8 +142,8 @@ fun SetUpNavGraph(
 
     Crossfade(targetState = currentScreen) { screen ->
         when (screen) {
-            "leave_approval" -> LeaveApprovalScreen()
-            "search" -> SearchScreen()
+            "leave_approval" -> LeaveApprovalScreen(navController,leaveApprovalViewModel,studentViewModel)
+            "search" -> SearchScreen(navController,studentViewModel)
             "report" -> ReportScreen()
         }
     }

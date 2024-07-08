@@ -30,6 +30,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.google.firebase.firestore.FirebaseFirestore
 import com.ozcanalasalvar.datepicker.compose.datepicker.WheelDatePicker
 import com.ozcanalasalvar.datepicker.model.Date
 import java.text.SimpleDateFormat
@@ -52,6 +53,11 @@ fun ReportScreen() {
     var showFromDatePicker by remember { mutableStateOf(false) }
     var showToDatePicker by remember { mutableStateOf(false) }
 
+    // State for report data
+    var attendanceReport by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+
+    // Firestore instance
+    val db = FirebaseFirestore.getInstance()
 
     Column(
         modifier = Modifier
@@ -64,7 +70,6 @@ fun ReportScreen() {
             value = rollNo,
             onValueChange = { rollNo = it },
             label = { Text("Roll No") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -112,8 +117,8 @@ fun ReportScreen() {
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-            showFromDatePicker = true
-        }) {
+                showFromDatePicker = true
+            }) {
             Text("Select From Date")
         }
 
@@ -123,8 +128,8 @@ fun ReportScreen() {
         Button(
             modifier = Modifier.fillMaxWidth(),
             onClick = {
-            showToDatePicker = true
-        }) {
+                showToDatePicker = true
+            }) {
             Text("Select To Date")
         }
 
@@ -133,36 +138,91 @@ fun ReportScreen() {
         Button(
             onClick = {
                 // Handle generate report action
-                Toast.makeText(context, "Generate Report", Toast.LENGTH_SHORT).show()
+                generateReport(
+                    rollNo,
+                    selectedText,
+                    fromDate,
+                    toDate,
+                    db
+                ) { report ->
+                    attendanceReport = report
+                    Toast.makeText(context, "Report Generated", Toast.LENGTH_SHORT).show()
+                }
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
         ) {
             Text(text = "Generate")
         }
 
-        // Show DatePickerDialogs
-        DatePickerDialog(
-            showDialog = showFromDatePicker,
-            onDismissRequest = { showFromDatePicker = false },
-            initialDate = fromDate,
-            onDateSelected = {
-                date -> fromDate = date
-                Toast.makeText(context,toDate.year.toString(),Toast.LENGTH_SHORT).show()
-            }
-        )
+        Spacer(modifier = Modifier.height(16.dp))
 
-        DatePickerDialog(
-            showDialog = showToDatePicker,
-            onDismissRequest = { showToDatePicker = false },
-            initialDate = toDate,
-            onDateSelected = {
-                date -> toDate = date
-                Toast.makeText(context,toDate.year.toString(),Toast.LENGTH_SHORT).show()
-            }
-        )
+        attendanceReport?.let { (attendedClasses, totalClasses) ->
+            Text(text = "Total Classes: $totalClasses")
+            Text(text = "Attended Classes: $attendedClasses")
+        }
+
+        // Show DatePickerDialogs
+        if (showFromDatePicker) {
+            DatePickerDialog(
+                showDialog = showFromDatePicker,
+                onDismissRequest = { showFromDatePicker = false },
+                initialDate = fromDate,
+                onDateSelected = { date ->
+                    fromDate = date
+                    showFromDatePicker = false
+                }
+            )
+        }
+
+        if (showToDatePicker) {
+            DatePickerDialog(
+                showDialog = showToDatePicker,
+                onDismissRequest = { showToDatePicker = false },
+                initialDate = toDate,
+                onDateSelected = { date ->
+                    toDate = date
+                    showToDatePicker = false
+                }
+            )
+        }
     }
 }
 
+private fun generateReport(
+    rollNo: String,
+    subjectTitle: String,
+    fromDate: Date,
+    toDate: Date,
+    db: FirebaseFirestore,
+    onReportGenerated: (Pair<Int, Int>) -> Unit
+) {
+    db.collection("students")
+        .whereEqualTo("rollNo", rollNo)
+        .get()
+        .addOnSuccessListener { studentDocuments ->
+            if (studentDocuments.isEmpty) {
+                onReportGenerated(Pair(0, 0))
+                return@addOnSuccessListener
+            }
+
+            val studentId = studentDocuments.documents[0].id
+
+            db.collection("attendance")
+                .whereEqualTo("studentId", studentId)
+                .whereEqualTo("subjectTitle", subjectTitle)
+                .whereGreaterThanOrEqualTo("date", fromDate)
+                .whereLessThanOrEqualTo("date", toDate)
+                .get()
+                .addOnSuccessListener { attendanceDocuments ->
+                    val totalClasses = attendanceDocuments.size()
+                    val attendedClasses = attendanceDocuments.count { doc ->
+                        doc.getString("status") == "Present"
+                    }
+
+                    onReportGenerated(Pair(attendedClasses, totalClasses))
+                }
+        }
+}
 @Composable
 fun DatePickerDialog(
     showDialog: Boolean,
