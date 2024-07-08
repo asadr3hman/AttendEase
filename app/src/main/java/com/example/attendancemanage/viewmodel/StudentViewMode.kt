@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.attendancemanage.model.Student
 import com.example.attendancemanage.model.Subject
 import com.google.firebase.firestore.FirebaseFirestore
@@ -43,6 +42,21 @@ class StudentViewModel() : ViewModel() {
             val documentSnapshot = studentRef.get().await()
             Log.e(TAG, documentSnapshot.toObject<Student>().toString())
             documentSnapshot.toObject<Student>()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error fetching student data", e)
+            null
+        }
+    }
+
+    suspend fun getStudentUid(rollNo: String): Student? {
+        return try {
+            val studentRef = db.collection("students").whereEqualTo("rollNo", rollNo).get().await()
+            if (studentRef.documents.isNotEmpty()) {
+                val document = studentRef.documents[0]
+                document.toObject(Student::class.java)
+            } else {
+                null
+            }
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching student data", e)
             null

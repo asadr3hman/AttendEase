@@ -152,7 +152,9 @@ fun AvailableSubjectsScreen(onSubjectSelected: (Subject) -> Unit, onDismiss: () 
     val availableSubjects = listOf(
         Subject("Math", "Dr. John" ),
         Subject("Physics", "Dr. Smith"),
-        Subject("Chemistry", "Dr. Doe")
+        Subject("Chemistry", "Dr. Doe"),
+        Subject("HCI", "Dr. Tito"),
+        Subject("HRM", "Mr. Nulla"),
     )
 
     Dialog(onDismissRequest = onDismiss) {

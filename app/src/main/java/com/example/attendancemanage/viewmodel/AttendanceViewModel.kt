@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import com.example.attendancemanage.model.Attendance
 import com.example.attendancemanage.model.LeaveRequest
 import com.example.attendancemanage.model.Subject
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.firestore.toObjects
 import com.ozcanalasalvar.datepicker.model.Date
 import kotlinx.coroutines.tasks.await
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class AttendanceViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -87,26 +89,43 @@ class AttendanceViewModel : ViewModel() {
 
     // Fetch all attendance for a specific student in a specific subject
     suspend fun getAttendanceForStudentInSubject(
-        studentId: String,
+        studentUid: String,
         subjectTitle: String,
-        fromDate: Timestamp,
-        toDate: Timestamp
+        fromDate: Date,
+        toDate: Date
     ): List<Attendance> {
         return try {
-            Log.v("AttendanceViewModel",fromDate.toString())
-            Log.v("AttendanceViewModel",toDate.toString())
+            // Convert com.ozcanalasalvar.datepicker.model.Date to java.util.Date
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            val fromCalendar = Calendar.getInstance().apply {
+                set(fromDate.year, fromDate.month - 1, fromDate.day)
+            }
+            val toCalendar = Calendar.getInstance().apply {
+                set(toDate.year, toDate.month - 1, toDate.day)
+            }
+
+            val fromDateString = dateFormat.format(fromCalendar.time)
+            val toDateString = dateFormat.format(toCalendar.time)
+
+            Log.v("AttendanceViewModel",studentUid + subjectTitle + fromDateString)
+            Log.v("AttendanceViewModel", toDateString)
 
             val attendanceRef = db.collection("attendance")
-                .whereEqualTo("studentId", studentId)
+                .whereEqualTo("studentId", studentUid)
                 .whereEqualTo("subjectTitle", subjectTitle)
-                .whereGreaterThanOrEqualTo("date",fromDate)
-                .whereLessThanOrEqualTo("date",toDate)
+                .whereGreaterThanOrEqualTo("date", fromDateString)
+                .whereLessThanOrEqualTo("date", toDateString)
+
             val querySnapshot = attendanceRef.get().await().toObjects<Attendance>()
-            Log.v("AttendanceViewModel",querySnapshot[0].studentId)
-            return querySnapshot
+
+            if (querySnapshot.isNotEmpty()) {
+                Log.v("AttendanceViewModel", querySnapshot[0].studentId)
+            }
+
+            querySnapshot
         } catch (e: Exception) {
             Log.e("AttendanceViewModel", "Error fetching attendance records", e)
             emptyList()
         }
-    }
-}
+    }}

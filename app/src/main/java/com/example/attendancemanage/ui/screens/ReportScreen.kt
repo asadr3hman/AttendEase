@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
+import com.example.attendancemanage.model.AttendanceReport
 import com.example.attendancemanage.viewmodel.AttendanceViewModel
 import com.example.attendancemanage.viewmodel.StudentViewModel
 import com.google.firebase.Timestamp
@@ -51,7 +52,7 @@ fun ReportScreen(
     attendanceViewModel: AttendanceViewModel
 ) {
     var rollNo by remember { mutableStateOf("") }
-    val subjects = listOf("Math", "Science", "History", "English")
+    val subjects = listOf("Math", "Physics", "Chemistry", "HCI","HRM")
     var selectedText by remember { mutableStateOf(subjects[0]) }
     var expanded by remember { mutableStateOf(false) }
     var fromDate by remember { mutableStateOf(Date(2024, 7, 6)) }
@@ -64,10 +65,7 @@ fun ReportScreen(
     var showToDatePicker by remember { mutableStateOf(false) }
 
     // State for report data
-    var attendanceReport by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-
-    // Firestore instance
-    val db = FirebaseFirestore.getInstance()
+    var attendanceReport by remember { mutableStateOf<AttendanceReport?>(null) }
 
     Column(
         modifier = Modifier
@@ -149,20 +147,24 @@ fun ReportScreen(
             onClick = {
                 // Generate attendance report
                 CoroutineScope(Dispatchers.IO).launch {
-//                    val attendanceRecords = attendanceViewModel.getAttendanceForStudentInSubject(
-//                        rollNo,
-//                        selectedText,
-//                        fromDate,
-//                        toDate
-//                    )
-//
-//                    // Calculate total and attended classes
-//                    val totalClasses = attendanceRecords.size
-//                    val attendedClasses = attendanceRecords.count { it.status == "Present" }
-//
-//                    withContext(Dispatchers.Main) {
-//                        attendanceReport = Pair(attendedClasses, totalClasses)
-//                    }
+                    val student = studentViewModel.getStudentUid(rollNo)
+                    val studentUid = student?.uid!!
+                    val attendanceRecords = attendanceViewModel.getAttendanceForStudentInSubject(
+                        studentUid,
+                        selectedText,
+                        fromDate,
+                        toDate
+                    )
+
+                    // Calculate total and attended classes
+                    val totalClasses = attendanceRecords.size
+                    val attendedClasses = attendanceRecords.count { it.status == "Present" }
+                    val absentClasses = attendanceRecords.count { it.status == "Absent" }
+                    val leavesClasses = attendanceRecords.count { it.status == "Approved" }
+
+                    withContext(Dispatchers.Main) {
+                        attendanceReport = AttendanceReport(totalClasses,attendedClasses,absentClasses,leavesClasses)
+                    }
                 }
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -172,9 +174,13 @@ fun ReportScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        attendanceReport?.let { (attendedClasses, totalClasses) ->
-            Text(text = "Total Classes: $totalClasses")
-            Text(text = "Attended Classes: $attendedClasses")
+        attendanceReport?.let { report ->
+            Column {
+                Text(text = "Total Classes: ${report.totalClasses}")
+                Text(text = "Attended Classes: ${report.attendedClasses}")
+                Text(text = "Absent Classes: ${report.absentClasses}")
+                Text(text = "Leaves: ${report.leavesClasses}")
+            }
         }
 
         // Show DatePickerDialogs

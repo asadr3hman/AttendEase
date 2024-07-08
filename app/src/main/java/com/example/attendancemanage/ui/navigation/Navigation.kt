@@ -156,8 +156,6 @@ fun ViewAttendance(
 @Composable
 fun AdminHome(navController: NavHostController) {
     AdminHomeScreen(navController)
-    val context = LocalContext.current
-    showToast(context, "AdminHome")
 }
 
 @Composable
@@ -198,7 +196,7 @@ fun Subject_choose(
         Log.v("SubjectChoose", student.toString())
         studentViewModel.addStudentWithSubjects(student)
         navController.navigate("student_home/{${student.uid}}") {
-            popUpTo("login") { inclusive = true }
+            popUpTo("splash") { inclusive = true }
         }
     })
 }
@@ -217,14 +215,12 @@ fun Register(navController: NavController, authViewModel: AuthViewModel) {
             coroutineScope.launch {
                 authViewModel.signUpUser(username, email, password) { success, uid, exception ->
                     if (success) {
-                        showToast(context, "Successful")
                         navController.navigate("subject_choose/$username/$email/$rollNo/$uid") {
-                            popUpTo("register") {
+                            popUpTo("splash") {
                                 inclusive = true
                             }
                         }
                     } else {
-                        exception?.let { showToast(context, it.toString()) }
                         setLoading(false) // Hide loading animation when sign-up fails
                     }
                 }
