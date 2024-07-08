@@ -1,49 +1,41 @@
 package com.example.attendancemanage.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
-import com.example.attendancemanage.R
 import com.example.attendancemanage.ui.components.ItemList
 import com.example.attendancemanage.ui.components.SearchBar
+import com.example.attendancemanage.ui.components.showToast
 import com.example.attendancemanage.viewmodel.StudentViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
 fun SearchScreen(
-    navHostController: NavHostController,
-    studentViewModel: StudentViewModel
+    navHostController: NavHostController, studentViewModel: StudentViewModel
 ) {
-    val isLoading = remember { mutableStateOf(false) }
+    val context = LocalContext.current
+    var isLoading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    Scaffold() { innerPadding ->
-        if (isLoading.value) {
+    val students by studentViewModel.studentList.observeAsState()
+    val getstudents by studentViewModel.getSomeStudentList.observeAsState()
+    var displayList = getstudents ?: students
+    Scaffold { innerPadding ->
+        if (isLoading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -54,12 +46,25 @@ fun SearchScreen(
             }
         } else {
             Column(
-                modifier = Modifier
-                    .fillMaxSize(),
+                modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                SearchBar()
-                ItemList()
+                SearchBar(onSearch = { searchQuery ->
+                    isLoading = true
+                    scope.launch {
+                        studentViewModel.searchStudent(searchQuery)
+                        isLoading = false
+                        if (students.isNullOrEmpty()) {
+                            displayList = getstudents
+                            showToast(context, "No results found, showing some students")
+                        }
+                    }
+                })
+                displayList?.let {
+                    ItemList(it, onItemClick = { student ->
+                        showToast(context, "Student Clicked")
+                    })
+                }
             }
         }
     }

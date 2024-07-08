@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.attendancemanage.model.Student
 import com.example.attendancemanage.model.Subject
 import com.google.firebase.firestore.FirebaseFirestore
@@ -17,11 +18,24 @@ class StudentViewModel() : ViewModel() {
     private var _student = MutableLiveData<Student>()
     val student: LiveData<Student> get() = _student
 
+    private val _getSomeStudentList = MutableLiveData<List<Student>>()
+    val getSomeStudentList: LiveData<List<Student>> get() = _getSomeStudentList
+
+
+    private val _studentList = MutableLiveData<List<Student>>()
+    val studentList: LiveData<List<Student>> get() = _studentList
+
     private val _studentSubjects = MutableLiveData<List<Subject>>()
     val studentSubjects: LiveData<List<Subject>> get() = _studentSubjects
 
     private val db = FirebaseFirestore.getInstance()
 
+
+    init {
+        viewModelScope.launch {
+            getSomeStudents()
+        }
+    }
 
     suspend fun getStudentData(uid: String): Student? {
         return try {
@@ -38,14 +52,15 @@ class StudentViewModel() : ViewModel() {
     fun addStudentWithSubjects(student: Student) {
         viewModelScope.launch {
             student.uid?.let {
-                db.collection("students").document(it).set(student)
-                    .addOnSuccessListener {
-                        _student.postValue(student)
-                        Log.v("StudentViewModel", "Student has been stored in the database")
-                    }
-                    .addOnFailureListener {
-                        Log.v("StudentViewModel", "Student has not been stored in the database. Something went wrong")
-                    }
+                db.collection("students").document(it).set(student).addOnSuccessListener {
+                    _student.postValue(student)
+                    Log.v("StudentViewModel", "Student has been stored in the database")
+                }.addOnFailureListener {
+                    Log.v(
+                        "StudentViewModel",
+                        "Student has not been stored in the database. Something went wrong"
+                    )
+                }
             }
         }
     }
@@ -66,5 +81,51 @@ class StudentViewModel() : ViewModel() {
         val documentSnapshot = studentRef.get().await()
         val student = documentSnapshot.toObject<Student>()
         return student?.subjects
+    }
+
+    suspend fun searchStudent(query: String) {
+        viewModelScope.launch {
+            try {
+                val resultList = mutableListOf<Student>()
+                val nameQuery = db.collection("students").whereEqualTo("name", query).get().await()
+                val rollNoQuery =
+                    db.collection("students").whereEqualTo("rollNo", query).get().await()
+
+                for (document in nameQuery.documents) {
+                    val student = document.toObject<Student>()
+                    if (student != null) {
+                        resultList.add(student)
+                    }
+                }
+
+                for (document in rollNoQuery.documents) {
+                    val student = document.toObject<Student>()
+                    if (student != null && !resultList.contains(student)) {
+                        resultList.add(student)
+                    }
+                }
+
+                _studentList.postValue(resultList)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error searching student", e)
+            }
+        }
+    }
+
+    suspend fun getSomeStudents() {
+        try {
+            val getsudentlist = mutableListOf<Student>()
+            val nameQuery = db.collection("students").limit(10).get().await()
+
+            for (document in nameQuery.documents) {
+                val student = document.toObject<Student>()
+                if (student != null) {
+                    getsudentlist.add(student)
+                }
+            }
+            _studentList.postValue(getsudentlist)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error get some students", e)
+        }
     }
 }

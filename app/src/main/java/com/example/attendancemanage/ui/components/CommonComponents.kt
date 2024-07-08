@@ -3,6 +3,7 @@ package com.example.attendancemanage.ui.components
 import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -48,6 +50,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.attendancemanage.R
+import com.example.attendancemanage.model.Student
 
 
 val textFieldPadding = 32.dp
@@ -140,7 +143,7 @@ fun Devider() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchBar() {
+fun SearchBar(onSearch: (String) -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
 
     TopAppBar(
@@ -148,9 +151,9 @@ fun SearchBar() {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp) // Adjust the height here
+                    .height(56.dp)
                     .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.small)
-                    .padding(horizontal = 8.dp) // Adjust padding for desired height
+                    .padding(horizontal = 8.dp)
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -165,7 +168,7 @@ fun SearchBar() {
                         ),
                         keyboardActions = KeyboardActions(
                             onSearch = {
-                                // Handle search action
+                                onSearch(searchQuery)
                             }
                         ),
                         singleLine = true,
@@ -184,7 +187,7 @@ fun SearchBar() {
         },
         actions = {
             IconButton(onClick = {
-                // Handle search button click
+                onSearch(searchQuery)
             }) {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
             }
@@ -193,19 +196,16 @@ fun SearchBar() {
 }
 
 @Composable
-fun ItemList() {
+fun ItemList(
+    students: List<Student>,
+    onItemClick: (Student) -> Unit
+) {
     LazyColumn {
-        items(10) { index ->
+        items(students) { student ->
             ListItem(
-                headlineContent = { Text("Two line list item with trailing") },
-                supportingContent = { Text("Secondary text") },
-                trailingContent = { Text("meta") },
-                leadingContent = {
-                    Icon(
-                        Icons.Filled.Favorite,
-                        contentDescription = "Localized description",
-                    )
-                }
+                modifier = Modifier.clickable {  onItemClick(student) },
+                headlineContent = { Text(student.name) },
+                overlineContent = { Text(student.rollNo) },
             )
             Devider()
         }

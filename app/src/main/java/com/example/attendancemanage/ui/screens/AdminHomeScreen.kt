@@ -1,15 +1,12 @@
 package com.example.attendancemanage.ui.screens
 
 import androidx.compose.animation.Crossfade
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
-import androidx.fragment.app.FragmentManager
 import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -19,15 +16,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.example.attendancemanage.ui.components.ItemList
-import com.example.attendancemanage.ui.components.SearchBar
 import com.example.attendancemanage.ui.navigation.BottomNavigationBar
 import com.example.attendancemanage.ui.navigation.NavigationItem
 import com.example.attendancemanage.ui.navigation.Screens
@@ -144,7 +138,7 @@ fun SetUpNavGraph(
         when (screen) {
             "leave_approval" -> LeaveApprovalScreen(navController,leaveApprovalViewModel,studentViewModel)
             "search" -> SearchScreen(navController,studentViewModel)
-            "report" -> ReportScreen()
+            "report" -> ReportScreen(navController,studentViewModel,attendanceViewModel)
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.example.attendancemanage.ui.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -26,20 +26,30 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavHostController
+import com.example.attendancemanage.viewmodel.AttendanceViewModel
+import com.example.attendancemanage.viewmodel.StudentViewModel
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FirebaseFirestore
 import com.ozcanalasalvar.datepicker.compose.datepicker.WheelDatePicker
 import com.ozcanalasalvar.datepicker.model.Date
-import java.text.SimpleDateFormat
-import java.util.Locale
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReportScreen() {
+fun ReportScreen(
+    navController: NavHostController,
+    studentViewModel: StudentViewModel,
+    attendanceViewModel: AttendanceViewModel
+) {
     var rollNo by remember { mutableStateOf("") }
     val subjects = listOf("Math", "Science", "History", "English")
     var selectedText by remember { mutableStateOf(subjects[0]) }
@@ -137,16 +147,22 @@ fun ReportScreen() {
 
         Button(
             onClick = {
-                // Handle generate report action
-                generateReport(
-                    rollNo,
-                    selectedText,
-                    fromDate,
-                    toDate,
-                    db
-                ) { report ->
-                    attendanceReport = report
-                    Toast.makeText(context, "Report Generated", Toast.LENGTH_SHORT).show()
+                // Generate attendance report
+                CoroutineScope(Dispatchers.IO).launch {
+//                    val attendanceRecords = attendanceViewModel.getAttendanceForStudentInSubject(
+//                        rollNo,
+//                        selectedText,
+//                        fromDate,
+//                        toDate
+//                    )
+//
+//                    // Calculate total and attended classes
+//                    val totalClasses = attendanceRecords.size
+//                    val attendedClasses = attendanceRecords.count { it.status == "Present" }
+//
+//                    withContext(Dispatchers.Main) {
+//                        attendanceReport = Pair(attendedClasses, totalClasses)
+//                    }
                 }
             },
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -188,41 +204,41 @@ fun ReportScreen() {
     }
 }
 
-private fun generateReport(
-    rollNo: String,
-    subjectTitle: String,
-    fromDate: Date,
-    toDate: Date,
-    db: FirebaseFirestore,
-    onReportGenerated: (Pair<Int, Int>) -> Unit
-) {
-    db.collection("students")
-        .whereEqualTo("rollNo", rollNo)
-        .get()
-        .addOnSuccessListener { studentDocuments ->
-            if (studentDocuments.isEmpty) {
-                onReportGenerated(Pair(0, 0))
-                return@addOnSuccessListener
-            }
-
-            val studentId = studentDocuments.documents[0].id
-
-            db.collection("attendance")
-                .whereEqualTo("studentId", studentId)
-                .whereEqualTo("subjectTitle", subjectTitle)
-                .whereGreaterThanOrEqualTo("date", fromDate)
-                .whereLessThanOrEqualTo("date", toDate)
-                .get()
-                .addOnSuccessListener { attendanceDocuments ->
-                    val totalClasses = attendanceDocuments.size()
-                    val attendedClasses = attendanceDocuments.count { doc ->
-                        doc.getString("status") == "Present"
-                    }
-
-                    onReportGenerated(Pair(attendedClasses, totalClasses))
-                }
-        }
-}
+//private fun generateReport(
+//    rollNo: String,
+//    subjectTitle: String,
+//    fromDate: Date,
+//    toDate: Date,
+//    db: FirebaseFirestore,
+//    onReportGenerated: (Pair<Int, Int>) -> Unit
+//) {
+//    db.collection("students")
+//        .whereEqualTo("rollNo", rollNo)
+//        .get()
+//        .addOnSuccessListener { studentDocuments ->
+//            if (studentDocuments.isEmpty) {
+//                onReportGenerated(Pair(0, 0))
+//                return@addOnSuccessListener
+//            }
+//
+//            val studentId = studentDocuments.documents[0].id
+//
+//            db.collection("attendance")
+//                .whereEqualTo("studentId", studentId)
+//                .whereEqualTo("subjectTitle", subjectTitle)
+//                .whereGreaterThanOrEqualTo("date", fromDate)
+//                .whereLessThanOrEqualTo("date", toDate)
+//                .get()
+//                .addOnSuccessListener { attendanceDocuments ->
+//                    val totalClasses = attendanceDocuments.size()
+//                    val attendedClasses = attendanceDocuments.count { doc ->
+//                        doc.getString("status") == "Present"
+//                    }
+//
+//                    onReportGenerated(Pair(attendedClasses, totalClasses))
+//                }
+//        }
+//}
 @Composable
 fun DatePickerDialog(
     showDialog: Boolean,
