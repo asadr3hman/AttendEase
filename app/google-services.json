@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "189897466131",
+    "project_id": "attendancemanage-de15c",
+    "storage_bucket": "attendancemanage-de15c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:189897466131:android:5587ff4bba6c88851bfae6",
+        "android_client_info": {
+          "package_name": "com.example.attendancemanage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyARD3Tm_KkUWSQ-fZ3vI1JyYJMMcbmKlKA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
