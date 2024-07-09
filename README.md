@@ -1,0 +1,2 @@
+# AttendEase
+Attendance Management System
